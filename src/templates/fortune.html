@@ -159,8 +159,8 @@
     <script>
       (function() {
         var luck = {{LUCK}};
-        // 运势 0~100 映射为 1~10 颗星
-        var starCount = Math.max(1, Math.ceil(luck / 10));
+        // 运势 0~99 均匀映射为 1~10 颗星（每档 10%）
+        var starCount = Math.floor(luck / 10) + 1;
         // 十种彩色
         var colors = [
           '#ff4757', '#ff6b81', '#ffa502', '#eccc68',
