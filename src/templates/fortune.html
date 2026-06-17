@@ -159,20 +159,20 @@
     <script>
       (function() {
         var luck = {{LUCK}};
-        // 运势 0~99 均匀映射为 1~10 颗星（每档 10%）
-        var starCount = Math.floor(luck / 10) + 1;
-        // 十种彩色
-        var colors = [
-          '#ff4757', '#ff6b81', '#ffa502', '#eccc68',
-          '#2ed573', '#1e90ff', '#5352ed', '#9b59b6',
-          '#ff6348', '#00d2d3'
-        ];
-        // 用运势值 + 星星序号做种子，保证同一天同一用户颜色固定
+        // 运势 0~99 加权映射 1~5 颗 ★，越多越稀有
+        var starCount;
+        if (luck < 45) starCount = 1;       // 45%
+        else if (luck < 72) starCount = 2;  // 27%
+        else if (luck < 88) starCount = 3;  // 16%
+        else if (luck < 97) starCount = 4;  // 9%
+        else starCount = 5;                 // 3%
+        // 五种彩色（低星暖色 → 高星冷色）
+        var colors = ['#ff6348', '#ffa502', '#ffd700', '#1e90ff', '#9b59b6'];
         var baseSeed = luck * 31 + {{UID}};
         var area = document.getElementById('stars-area');
         for (var i = 0; i < starCount; i++) {
           var span = document.createElement('span');
-          span.textContent = '⭐';
+          span.textContent = '★';
           var ci = (baseSeed + i * 7) % colors.length;
           span.style.color = colors[ci];
           area.appendChild(span);
