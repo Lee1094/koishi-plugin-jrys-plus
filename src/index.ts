@@ -1,12 +1,10 @@
 /**
  * koishi-plugin-jrys-plus
- * 今日运势签到 + 签到天数排行榜（精简版）
+ * 今日运势签到 + 签到天数排行榜
  *
- * 改动：
- * - 移除金币/经验值展示和进度条
- * - 🍀 替换为 ⭐
- * - 日期问候模块移除半透明背景
- * - 仅保留签到天数排行榜
+ * - 彩色星星替代运势文字
+ * - 无经验/等级系统
+ * - 仅签到天数排行榜
  */
 import { Context, Schema, h, Logger } from 'koishi'
 import { pathToFileURL } from 'url'
@@ -26,15 +24,12 @@ export const name = 'jrys-plus'
 export interface Config {
   imgUrl: string
   signExp: [number, number]
-  levelSet: si.LevelInfo[]
-  fortuneSet: si.FortuneInfo[]
   event: RollEvent[]
   // 排行配置
   signCommand: string
   imageMode: boolean
   limit: number
   borderwidth: number
-  pre_next_LevelDisplay: boolean
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,25 +39,11 @@ export const Config = Schema.intersect([
       .description('随机横图api或者本地图片目录路径。填 URL 则直接用；填本地路径则随机取目录内图片。')
       .required(),
     signExp: Schema.tuple([Number, Number])
-      .description('签到获得经验范围（仅用于后端等级/排行计算，不在卡片展示）')
+      .description('签到获得经验范围（仅用于后端累计，不在卡片展示）')
       .default([1, 100]),
   }).description('基础设置'),
 
   Schema.object({
-    levelSet: Schema.array(Schema.object({
-      level: Schema.number().description('等级'),
-      levelExp: Schema.number().description('等级最低经验'),
-      levelName: Schema.string().description('等级名称'),
-      levelColor: Schema.string().role('color').description('等级颜色'),
-    })).role('table').default(si.defaultLevelInfo)
-      .description('经验等级设置（升序，最低等级经验必须为0）'),
-
-    fortuneSet: Schema.array(Schema.object({
-      luck: Schema.number().description('每级最低运势'),
-      desc: Schema.string().description('运势描述'),
-    })).role('table').default(si.defaultFortuneInfo)
-      .description('运势值描述（升序，最低一级必须为0，描述最长14个中文字符）'),
-
     event: Schema.array(Schema.object({
       name: Schema.string().description('事件名称'),
       good: Schema.string().description('好的结局'),
@@ -76,7 +57,6 @@ export const Config = Schema.intersect([
     imageMode: Schema.boolean().description('排行榜是否使用图片模式（需要 puppeteer）').default(true),
     limit: Schema.number().description('排行榜显示的最大条目数').min(1).max(100).default(10),
     borderwidth: Schema.number().description('文本模式边框宽度').default(14),
-    pre_next_LevelDisplay: Schema.boolean().description('排行榜中显示前后等级信息').default(true),
   }).description('排行榜设置'),
 ])
 
@@ -128,7 +108,7 @@ export function apply(ctx: Context, config: Config) {
   const eventJson: RollEvent[] = [...defaultEventJson, ...config.event]
 
   // 注册排行榜
-  registerRanks(ctx, db, config, () => config.levelSet)
+  registerRanks(ctx, db, config)
 
   /* ── 运势签到命令 ── */
   ctx.command('jrys', '今日运势')
@@ -145,11 +125,9 @@ export function apply(ctx: Context, config: Config) {
 
       const month = (date.getMonth() + 1).toString().padStart(2, '0')
       const day = date.getDate().toString().padStart(2, '0')
-      const luckInfo = signin.getFortuneInfo(luck)
       const [gd1, gd2, bd1, bd2] = await jrys.getRandomObjects(eventJson, session.user.id)
       const hitokoto = await fetchHitokoto()
       const greeting = signin.getGreeting(date.getHours())
-      const levelinfo = signin.getLevelInfo(sign.allExp)
 
       // 背景图
       let bgUrl: string
@@ -179,10 +157,8 @@ export function apply(ctx: Context, config: Config) {
           .replace('{{DAY}}', day)
           .replace('{{HITOKOTO}}', hitokoto)
           .replace('{{NAME}}', name)
-          .replace('{{LEVEL_NAME}}', levelinfo.levelInfo.levelName)
-          .replace('{{LEVEL_COLOR}}', levelinfo.levelInfo.levelColor)
           .replace('{{LUCK}}', String(luck))
-          .replace('{{LUCK_INFO}}', luckInfo)
+          .replace('{{UID}}', String(session.user.id))
           .replace('{{GOODDO}}', gooddo)
           .replace('{{BADDO}}', baddo)
 

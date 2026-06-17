@@ -64,25 +64,23 @@
         }
         .signin {
             color: #838383;
-            margin: 0 0 10px 0;
+            margin: 0 0 24px 0;
             font-size: 20px;
             font-weight: 500;
-        }
-        .levelInfo {
-            display: flex;
-            justify-content: center;
-            font-size: 30px;
-            font-weight: bold;
-            margin-bottom: 10px;
+            text-align: center;
         }
 
-        /* ── 好运值 ── */
-        .fortune {
+        /* ── 彩色星星 ── */
+        .stars {
             display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-            margin: 10px 5px 0 0;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin: 10px 0 20px 0;
+        }
+        .stars span {
+            font-size: 36px;
+            line-height: 1;
         }
 
         /* ── 宜/忌 ── */
@@ -140,16 +138,7 @@
         <div class="content">
             <div class="signin"><strong>{{NAME}}</strong> 签到成功！</div>
 
-            <div class="levelInfo">
-                <span style="color: {{LEVEL_COLOR}};">{{LEVEL_NAME}}</span>
-            </div>
-
-            <div class="fortune">
-                <span style="font-size: 36px; font-weight: bold;">
-                    <span style="font-size: 28px;">⭐</span>{{LUCK}}
-                </span>
-                <span style="font-size: 28px; color: #838383;">🌠{{LUCK_INFO}}</span>
-            </div>
+            <div class="stars" id="stars-area"></div>
 
             <hr>
 
@@ -166,5 +155,29 @@
 
         <div class="credit">随机生成 请勿迷信 | JRYS+</div>
     </div>
+
+    <script>
+      (function() {
+        var luck = {{LUCK}};
+        // 运势 0~100 映射为 1~10 颗星
+        var starCount = Math.max(1, Math.ceil(luck / 10));
+        // 十种彩色
+        var colors = [
+          '#ff4757', '#ff6b81', '#ffa502', '#eccc68',
+          '#2ed573', '#1e90ff', '#5352ed', '#9b59b6',
+          '#ff6348', '#00d2d3'
+        ];
+        // 用运势值 + 星星序号做种子，保证同一天同一用户颜色固定
+        var baseSeed = luck * 31 + {{UID}};
+        var area = document.getElementById('stars-area');
+        for (var i = 0; i < starCount; i++) {
+          var span = document.createElement('span');
+          span.textContent = '⭐';
+          var ci = (baseSeed + i * 7) % colors.length;
+          span.style.color = colors[ci];
+          area.appendChild(span);
+        }
+      })();
+    </script>
 </body>
 </html>

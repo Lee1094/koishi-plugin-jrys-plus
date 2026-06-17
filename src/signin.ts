@@ -110,14 +110,6 @@ import { Jrys } from './roll'
 
 export interface SigninConfig {
   signExp: [number, number]
-  levelSet: LevelInfo[]
-  fortuneSet: FortuneInfo[]
-}
-
-export function getLevelInfo(exp: number, levels: LevelInfo[]): LevelInfo {
-  if (!levels?.length) return { level: 0, levelExp: 0, levelName: '无等级', levelColor: '#666666' }
-  const sorted = [...levels].sort((a, b) => b.levelExp - a.levelExp)
-  return sorted.find(l => exp >= l.levelExp) || sorted[sorted.length - 1]
 }
 
 export class Signin {
@@ -164,29 +156,6 @@ export class Signin {
       signCount: accCount,
     })
     return { status: 0, allExp: accExp, signTime: date, count: accCount }
-  }
-
-  getLevelInfo(exp: number) {
-    let index = 0
-    for (let i = 0; i < this.cfg.levelSet.length; i++) {
-      if (exp >= this.cfg.levelSet[i].levelExp) index++
-      else break
-    }
-    let nExp: number | string
-    if (index >= this.cfg.levelSet.length) nExp = '???'
-    else nExp = this.cfg.levelSet[index].levelExp
-    index--
-    return { levelInfo: this.cfg.levelSet[index], nextExp: nExp }
-  }
-
-  getFortuneInfo(luck: number): string {
-    let index = 0
-    for (let i = 0; i < this.cfg.fortuneSet.length; i++) {
-      if (luck >= this.cfg.fortuneSet[i].luck) index++
-      else break
-    }
-    index--
-    return this.cfg.fortuneSet[index].desc
   }
 
   getGreeting(hour: number): string {

@@ -1,5 +1,4 @@
 import { Context, Database, h } from 'koishi'
-import { LevelInfo, getLevelInfo } from './signin'
 import { promises as fs } from 'fs'
 import { resolve } from 'path'
 
@@ -19,7 +18,7 @@ async function resolveTemplatePath() {
 }
 
 /* ── 文本渲染 ── */
-function renderSignText(users: any[], levelConfig: LevelInfo[], config: any) {
+function renderSignText(users: any[], config: any) {
   const divider = '┏' + '—'.repeat(config.borderwidth) + '┓'
   const midDivider = '┣' + '—'.repeat(config.borderwidth) + '┫'
   const endDivider = '┗' + '—'.repeat(config.borderwidth) + '┛'
@@ -27,20 +26,7 @@ function renderSignText(users: any[], levelConfig: LevelInfo[], config: any) {
 
   const rankings = users.map((user, index) => {
     const medal = index < 3 ? ['👑', '⭐', '✧'][index] : '•'
-    let lines = [`┃ ${medal} ${index + 1}. ${user.displayName}`, `┃  📅${user.signCount.toLocaleString()} 天`]
-
-    if (config.pre_next_LevelDisplay && levelConfig.length) {
-      const sorted = [...levelConfig].sort((a, b) => a.levelExp - b.levelExp)
-      const cur = getLevelInfo(user.exp, levelConfig)
-      const idx = sorted.findIndex(l => l.levelExp === cur.levelExp)
-      const prev = sorted[idx - 1]?.levelName
-      const next = sorted[idx + 1]?.levelName
-      let line = '┃  ✨'
-      if (prev) line += `${prev} → `
-      line += `「${cur.levelName}」`
-      if (next) line += ` → ${next}`
-      lines.push(line)
-    }
+    const lines = [`┃ ${medal} ${index + 1}. ${user.displayName}`, `┃  📅${user.signCount.toLocaleString()} 天`]
     return lines.join('\n')
   }).join('\n\n')
 
@@ -51,12 +37,11 @@ function renderSignText(users: any[], levelConfig: LevelInfo[], config: any) {
 async function renderRankImage(
   ctx: Context,
   users: any[], totalUsers: number,
-  limit: number, getLevelConfig: () => LevelInfo[],
+  limit: number,
 ) {
   try {
     const path = await resolveTemplatePath()
     let template = await fs.readFile(path, 'utf-8')
-    const levelConfig = getLevelConfig()
 
     const data = {
       type: 'sign',
@@ -64,28 +49,11 @@ async function renderRankImage(
       channelName: '当前频道',
       totalUsers,
       updateTime: new Date().toLocaleString('zh-CN'),
-      users: users.map(user => {
-        const sorted = [...levelConfig].sort((a, b) => a.levelExp - b.levelExp)
-        const cur = getLevelInfo(user.exp, levelConfig)
-        const idx = sorted.findIndex(l => l.levelExp === cur.levelExp)
-        const prev = sorted[idx - 1]?.levelName
-        const nextObj = sorted[idx + 1]
-        const nextName = nextObj?.levelName
-        let levelProgression = ''
-        if (prev) levelProgression += `${prev} → `
-        levelProgression += `「${cur.levelName}」`
-        if (nextName) levelProgression += ` → ${nextName}`
-        return {
-          displayName: user.displayName,
-          originalId: user.name,
-          value: user.signCount,
-          levelName: cur.levelName,
-          levelColor: cur.levelColor,
-          currentLevelExp: cur.levelExp,
-          nextLevelExp: nextObj?.levelExp ?? null,
-          levelProgression,
-        }
-      }),
+      users: users.map(user => ({
+        displayName: user.displayName,
+        originalId: user.name,
+        value: user.signCount,
+      })),
     }
 
     template = template.replace('{{DATA}}', JSON.stringify(data))
@@ -110,9 +78,7 @@ export function registerRanks(
   ctx: Context,
   db: Database<any>,
   config: any,
-  getLevelConfig: () => LevelInfo[],
 ) {
-  const logger = ctx.logger('jrys-plus')
 
   function canUseImage(): boolean {
     return config.imageMode && !!ctx.puppeteer
@@ -137,9 +103,9 @@ export function registerRanks(
 
       if (canUseImage()) {
         const total = (await db.get('jrys', {})).length
-        const img = await renderRankImage(ctx, users, total, config.limit, getLevelConfig)
+        const img = await renderRankImage(ctx, users, total, config.limit)
         if (img) return img
       }
-      return renderSignText(users, getLevelConfig(), config)
+      return renderSignText(users, config)
     })
 }
