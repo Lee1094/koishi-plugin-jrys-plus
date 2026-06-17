@@ -1,12 +1,12 @@
 /**
  * koishi-plugin-jrys-plus
- * 今日运势签到 + 排行榜（精简版）
+ * 今日运势签到 + 签到天数排行榜（精简版）
  *
  * 改动：
  * - 移除金币/经验值展示和进度条
  * - 🍀 替换为 ⭐
  * - 日期问候模块移除半透明背景
- * - 整合排名功能
+ * - 仅保留签到天数排行榜
  */
 import { Context, Schema, h, Logger } from 'koishi'
 import { pathToFileURL } from 'url'
@@ -30,12 +30,10 @@ export interface Config {
   fortuneSet: si.FortuneInfo[]
   event: RollEvent[]
   // 排行配置
-  expCommand: string
   signCommand: string
   imageMode: boolean
   limit: number
   borderwidth: number
-  next_ExpDisplay: boolean
   pre_next_LevelDisplay: boolean
 }
 
@@ -74,12 +72,10 @@ export const Config = Schema.intersect([
   }).description('签到/运势设置'),
 
   Schema.object({
-    expCommand: Schema.string().description('经验排行榜命令').default('jrysranks'),
     signCommand: Schema.string().description('签到天数排行榜命令').default('jrysranksign'),
     imageMode: Schema.boolean().description('排行榜是否使用图片模式（需要 puppeteer）').default(true),
     limit: Schema.number().description('排行榜显示的最大条目数').min(1).max(100).default(10),
     borderwidth: Schema.number().description('文本模式边框宽度').default(14),
-    next_ExpDisplay: Schema.boolean().description('排行榜中显示升级所需经验').default(true),
     pre_next_LevelDisplay: Schema.boolean().description('排行榜中显示前后等级信息').default(true),
   }).description('排行榜设置'),
 ])
