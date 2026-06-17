@@ -1,0 +1,44 @@
+{
+  "name": "koishi-plugin-jrys-plus",
+  "version": "1.0.0",
+  "description": "今日运势签到 + 排行榜，精简优化版",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').cpSync('src/templates', 'lib/templates', {recursive: true})\"",
+    "clean": "rimraf lib",
+    "typecheck": "tsc --noEmit"
+  },
+  "koishi": {
+    "description": {
+      "zh": "今日运势+签到+排行榜（精简版：无金币/经验条，⭐好运值）"
+    },
+    "service": {
+      "required": ["database"],
+      "optional": ["puppeteer"]
+    }
+  },
+  "keywords": [
+    "koishi",
+    "plugin",
+    "jrys",
+    "fortune",
+    "运势",
+    "签到",
+    "排行榜"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "koishi": "^4.18.0",
+    "koishi-plugin-puppeteer": "*"
+  },
+  "devDependencies": {
+    "koishi": "^4.18.0",
+    "koishi-plugin-puppeteer": "*",
+    "typescript": "^5.4.0",
+    "rimraf": "^5.0.0"
+  }
+}

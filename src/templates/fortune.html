@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>运势签到</title>
+    <style>
+        @font-face {
+            font-family: 'emoji';
+            src: url("notoemoji.subset.woff2") format("woff2");
+        }
+        @font-face {
+            font-family: 'osans4';
+            src: url("osans4.subset.woff2") format("woff2");
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: osans4, emoji, Arial, sans-serif;
+        }
+        .container { max-width: 600px; }
+
+        /* ── 头部：头像 + 日期问候 ── */
+        .header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            margin-left: 24px;
+            margin-right: 24px;
+            margin-top: -50px;
+        }
+        .avatar {
+            max-width: 80px;
+            max-height: 80px;
+            border-radius: 10px;
+            border: 3px solid #ffffff;
+        }
+        .dateInfo {
+            max-height: 83px;
+            width: 80%;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 60px;
+            font-weight: bold;
+        }
+        .dateInfo span {
+            margin-left: 16px;
+            margin-right: 16px;
+        }
+
+        /* ── 一言 ── */
+        .hitokoto {
+            color: #838383;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 6px;
+        }
+
+        /* ── 内容区 ── */
+        .content {
+            padding: 5px 30px 10px 30px;
+        }
+        .signin {
+            color: #838383;
+            margin: 0 0 10px 0;
+            font-size: 20px;
+            font-weight: 500;
+        }
+        .levelInfo {
+            display: flex;
+            justify-content: center;
+            font-size: 30px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* ── 好运值 ── */
+        .fortune {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 5px 0 0;
+        }
+
+        /* ── 宜/忌 ── */
+        .toDo {
+            display: flex;
+            flex-direction: row;
+            margin-top: 18px;
+            align-items: center;
+        }
+        .toDo p {
+            margin: 0 0 0 20px;
+            font-size: 20px;
+            font-weight: 500;
+            color: #434343;
+        }
+        .toDoBg {
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .toDoBg span {
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+        }
+        .credit {
+            margin-top: 5px;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body id="body">
+    <div class="container">
+
+        <img style="width: 100%;" src="{{BG_URL}}" alt="Top Image">
+
+        <div class="header">
+            <img class="avatar" src="{{AVATAR_URL}}" alt="Avatar">
+            <div class="dateInfo">
+                <span class="greeting">{{GREETING}}</span>
+                <span style="color: #666666;">{{MONTH}}/{{DAY}}</span>
+            </div>
+        </div>
+
+        <div class="hitokoto">
+            <p>{{HITOKOTO}}</p>
+        </div>
+
+        <div class="content">
+            <div class="signin"><strong>{{NAME}}</strong> 签到成功！</div>
+
+            <div class="levelInfo">
+                <span style="color: {{LEVEL_COLOR}};">{{LEVEL_NAME}}</span>
+            </div>
+
+            <div class="fortune">
+                <span style="font-size: 36px; font-weight: bold;">
+                    <span style="font-size: 28px;">⭐</span>{{LUCK}}
+                </span>
+                <span style="font-size: 28px; color: #838383;">🌠{{LUCK_INFO}}</span>
+            </div>
+
+            <hr>
+
+            <div class="toDo">
+                <div class="toDoBg" style="background-color: #D4473D;"><span>宜</span></div>
+                <p style="text-shadow: 0px 0px 1px #ffbbbb;">{{GOODDO}}</p>
+            </div>
+
+            <div class="toDo">
+                <div class="toDoBg" style="background-color: #000000;"><span>忌</span></div>
+                <p style="text-shadow: 0px 0px 1px #bcdbff;">{{BADDO}}</p>
+            </div>
+        </div>
+
+        <div class="credit">随机生成 请勿迷信 | JRYS+</div>
+    </div>
+</body>
+</html>
