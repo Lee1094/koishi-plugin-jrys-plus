@@ -1,5 +1,5 @@
-import { Context, h } from 'koishi'
-import { LevelInfo } from './signin'
+import { Context, Database, h } from 'koishi'
+import { LevelInfo, getLevelInfo } from './signin'
 import { promises as fs } from 'fs'
 import { resolve } from 'path'
 
@@ -16,15 +16,6 @@ async function resolveTemplatePath() {
     try { await fs.access(candidate); return candidate } catch { /* next */ }
   }
   throw new Error('未找到 rank-card.html 模板文件')
-}
-
-/* ── 等级查询 ── */
-const DEFAULT_LEVEL: LevelInfo = { level: 0, levelExp: 0, levelName: '无等级', levelColor: '#666666' }
-
-function getLevelInfo(exp: number, levels: LevelInfo[]): LevelInfo {
-  if (!levels?.length) return DEFAULT_LEVEL
-  const sorted = [...levels].sort((a, b) => b.levelExp - a.levelExp)
-  return sorted.find(l => exp >= l.levelExp) || sorted[sorted.length - 1]
 }
 
 /* ── 文本渲染 ── */
@@ -117,6 +108,7 @@ async function renderRankImage(
 /* ── 注册排行命令 ── */
 export function registerRanks(
   ctx: Context,
+  db: Database<any>,
   config: any,
   getLevelConfig: () => LevelInfo[],
 ) {
@@ -127,7 +119,7 @@ export function registerRanks(
   }
 
   async function getRankedUsers() {
-    const all = await ctx.database.get('jrys', {}, { sort: { signCount: 'desc' } })
+    const all = await db.get('jrys', {}, { sort: { signCount: 'desc' } })
     if (!all.length) return null
 
     const users = all.slice(0, config.limit).map(u => ({
@@ -144,7 +136,7 @@ export function registerRanks(
       if (!users.length) return '当前频道暂无数据'
 
       if (canUseImage()) {
-        const total = (await ctx.database.get('jrys', {})).length
+        const total = (await db.get('jrys', {})).length
         const img = await renderRankImage(ctx, users, total, config.limit, getLevelConfig)
         if (img) return img
       }

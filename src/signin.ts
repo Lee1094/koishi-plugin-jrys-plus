@@ -1,4 +1,4 @@
-import { Context } from 'koishi'
+import { Context, Database } from 'koishi'
 
 declare module 'koishi' {
   interface Tables {
@@ -105,7 +105,7 @@ export function initDatabase(ctx: Context) {
   })
 }
 
-/* ── 签到逻辑（无 monetary 依赖） ── */
+/* ── 签到逻辑 ── */
 import { Jrys } from './roll'
 
 export interface SigninConfig {
@@ -114,16 +114,21 @@ export interface SigninConfig {
   fortuneSet: FortuneInfo[]
 }
 
+export function getLevelInfo(exp: number, levels: LevelInfo[]): LevelInfo {
+  if (!levels?.length) return { level: 0, levelExp: 0, levelName: '无等级', levelColor: '#666666' }
+  const sorted = [...levels].sort((a, b) => b.levelExp - a.levelExp)
+  return sorted.find(l => exp >= l.levelExp) || sorted[sorted.length - 1]
+}
+
 export class Signin {
   constructor(
-    private ctx: Context,
+    private db: Database<any>,
     private cfg: SigninConfig,
   ) {}
 
   /** 执行签到。返回 0=成功, 1=已签到 */
   async callSignin(uid: number, userid: string, luck: number) {
     const date = new Date()
-    const roll = new Jrys()
 
     // 经验值仅用于后端等级/排行计算，不在签到卡上展示
     const exp =
@@ -132,11 +137,11 @@ export class Signin {
           (this.cfg.signExp[1] - this.cfg.signExp[0]),
       ) + this.cfg.signExp[0]
 
-    const userData = await this.ctx.database.get('jrys', { id: uid })
+    const userData = await this.db.get('jrys', { id: uid })
 
     if (userData.length === 0) {
       const accExp = exp
-      await this.ctx.database.create('jrys', {
+      await this.db.create('jrys', {
         id: uid,
         name: userid,
         time: date,
@@ -152,7 +157,7 @@ export class Signin {
 
     const accExp = userData[0].exp + exp
     const accCount = userData[0].signCount + 1
-    await this.ctx.database.set('jrys', { id: uid }, {
+    await this.db.set('jrys', { id: uid }, {
       name: userid,
       time: date,
       exp: accExp,

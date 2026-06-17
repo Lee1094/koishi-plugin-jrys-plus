@@ -1,6 +1,6 @@
 {
   "name": "koishi-plugin-jrys-plus",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "今日运势签到 + 排行榜，精简优化版",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",

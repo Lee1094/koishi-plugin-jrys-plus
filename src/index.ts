@@ -119,14 +119,16 @@ async function fetchHitokoto() {
 /* ── 主入口 ── */
 export function apply(ctx: Context, config: Config) {
   si.initDatabase(ctx)
-  const signin = new si.Signin(ctx, config)
+  const db = ctx.database
+  const puppeteer = ctx.puppeteer
+  const signin = new si.Signin(db, config)
   const jrys = new Jrys()
 
   // 合并事件
   const eventJson: RollEvent[] = [...defaultEventJson, ...config.event]
 
   // 注册排行榜
-  registerRanks(ctx, config, () => config.levelSet)
+  registerRanks(ctx, db, config, () => config.levelSet)
 
   /* ── 运势签到命令 ── */
   ctx.command('jrys', '今日运势')
@@ -187,7 +189,7 @@ export function apply(ctx: Context, config: Config) {
         const outPath = path.resolve(__dirname, 'templates', '_fortune_render.html')
         fs.writeFileSync(outPath, html)
 
-        page = await ctx.puppeteer.page()
+        page = await puppeteer.page()
         await page.setViewport({ width: 600, height: 1080 * 2 })
         await page.goto(`file:///${outPath}`)
         await page.waitForSelector('#body', { timeout: 10000 })
