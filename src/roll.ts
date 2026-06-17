@@ -1,5 +1,16 @@
 // 每日运势值、随机黄历事件
 
+/** 将任意字符串/数字转为稳定的正整数 hash */
+function hashUID(uid: number | string): number {
+  const str = String(uid)
+  let hash = 5381
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) ^ str.charCodeAt(i)
+    hash = hash >>> 0 // 转为无符号 32 位
+  }
+  return hash
+}
+
 export class Jrys {
   constructor() {}
 
@@ -9,14 +20,14 @@ export class Jrys {
   }
 
   /** 同一天同一用户运势值固定（0~maxRange） */
-  async getFortune(uid: number, maxRange: number = 100): Promise<number> {
+  async getFortune(uid: number | string, maxRange: number = 100): Promise<number> {
     const etime = new Date().setHours(0, 0, 0, 0)
-    const todaySeed = (Number(uid) * etime) % 1000000001
+    const todaySeed = (hashUID(uid) ^ etime) % 1000000001
     return Math.floor(this.seededRandom(todaySeed) * maxRange)
   }
 
   /** 抽 4 个不重复的黄历事件 */
-  async getRandomObjects(jsonObject: Array<any>, uid: number): Promise<Array<any>> {
+  async getRandomObjects(jsonObject: Array<any>, uid: number | string): Promise<Array<any>> {
     if (!Array.isArray(jsonObject) || jsonObject.length < 4) {
       throw new Error('事件列表至少需要 4 个')
     }
